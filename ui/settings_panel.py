@@ -78,13 +78,24 @@ class SettingsPanel(QWidget):
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
-        # Header Title
+        # Header Row with Title and Mascot Sticker
+        header_row = QHBoxLayout()
+        header_text = QVBoxLayout()
+        header_text.setSpacing(2)
+
         title_label = QLabel("Tùy chọn in ấn")
         title_label.setObjectName("dialogTitle")
         subtitle_label = QLabel("Xem trước và thiết lập thông số trang in")
         subtitle_label.setObjectName("dialogSubtitle")
-        layout.addWidget(title_label)
-        layout.addWidget(subtitle_label)
+        header_text.addWidget(title_label)
+        header_text.addWidget(subtitle_label)
+        header_row.addLayout(header_text)
+        header_row.addStretch()
+
+        from ui.stickers import create_sticker_label
+        header_sticker = create_sticker_label("shiba_1.gif", 52, 56, self)
+        header_row.addWidget(header_sticker, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        layout.addLayout(header_row)
         layout.addSpacing(6)
 
         # 1. PRINTER SELECTION CARD
@@ -305,15 +316,21 @@ class SettingsPanel(QWidget):
 
         # BOTTOM ACTION BAR
         bottom_bar = QFrame()
-        bottom_bar.setStyleSheet("background-color: #FFF0F4; border-top: 1px solid #FCE7F0;")
+        bottom_bar.setStyleSheet("background-color: #FFF5EB; border-top: 1px solid #FED7AA;")
         b_layout = QHBoxLayout(bottom_bar)
-        b_layout.setContentsMargins(16, 12, 16, 12)
+        b_layout.setContentsMargins(16, 8, 16, 8)
         b_layout.setSpacing(12)
 
         self.cancel_btn = QPushButton("Hủy bỏ")
         self.cancel_btn.setObjectName("cancelBtn")
         self.cancel_btn.clicked.connect(self.cancel_requested.emit)
         b_layout.addWidget(self.cancel_btn)
+
+        b_layout.addStretch()
+
+        # Mascot cheer sticker between buttons
+        cheer_sticker = create_sticker_label("shiba_2.gif", 52, 52, self)
+        b_layout.addWidget(cheer_sticker, alignment=Qt.AlignmentFlag.AlignCenter)
 
         b_layout.addStretch()
 
@@ -324,9 +341,9 @@ class SettingsPanel(QWidget):
         b_layout.addWidget(self.print_btn)
 
         # Drop shadows on action buttons
-        _add_drop_shadow(self.cancel_btn, blur=8, y_offset=2, color_tuple=(180, 100, 140, 45))
-        _add_drop_shadow(self.print_btn, blur=14, y_offset=3, color_tuple=(219, 39, 119, 100))
-        _add_drop_shadow(self.refresh_printers_btn, blur=6, y_offset=2, color_tuple=(180, 100, 140, 45))
+        _add_drop_shadow(self.cancel_btn, blur=8, y_offset=2, color_tuple=(190, 110, 50, 40))
+        _add_drop_shadow(self.print_btn, blur=14, y_offset=3, color_tuple=(234, 88, 12, 100))
+        _add_drop_shadow(self.refresh_printers_btn, blur=6, y_offset=2, color_tuple=(190, 110, 50, 40))
 
         root_layout.addWidget(bottom_bar)
 

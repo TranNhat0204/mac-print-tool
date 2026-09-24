@@ -40,10 +40,9 @@ class DropZoneWidget(QWidget):
         f_layout.setContentsMargins(40, 60, 40, 60)
         f_layout.setSpacing(16)
 
-        icon_label = QLabel("🖨️")
-        icon_label.setStyleSheet("font-size: 56px;")
-        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        f_layout.addWidget(icon_label)
+        from ui.stickers import create_sticker_label
+        self.mascot = create_sticker_label("shiba_3.gif", 120, 120, self)
+        f_layout.addWidget(self.mascot, alignment=Qt.AlignmentFlag.AlignCenter)
 
         title = QLabel("Kéo và thả tệp vào đây để in")
         title.setStyleSheet("font-size: 20px; font-weight: 700; color: #9A3412;")

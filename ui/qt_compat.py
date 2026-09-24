@@ -11,7 +11,7 @@ try:
     from PyQt6.QtCore import Qt, QSize, QPoint, QRect, QRectF, pyqtSignal as Signal, pyqtSlot as Slot, QTimer
     from PyQt6.QtGui import (
         QPixmap, QImage, QPainter, QColor, QFont, QPen, QBrush, QIcon, QKeySequence, QAction,
-        QPageSize, QPageLayout, QTextDocument
+        QPageSize, QPageLayout, QTextDocument, QMovie
     )
     from PyQt6.QtWidgets import (
         QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
@@ -28,7 +28,7 @@ except ImportError:
         from PySide6.QtCore import Qt, QSize, QPoint, QRect, QRectF, Signal, Slot, QTimer
         from PySide6.QtGui import (
             QPixmap, QImage, QPainter, QColor, QFont, QPen, QBrush, QIcon, QKeySequence, QAction,
-            QPageSize, QPageLayout, QTextDocument
+            QPageSize, QPageLayout, QTextDocument, QMovie
         )
         from PySide6.QtWidgets import (
             QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
@@ -51,5 +51,6 @@ __all__ = [
     'QSlider', 'QScrollArea', 'QFrame', 'QSplitter', 'QFileDialog', 'QMessageBox',
     'QStatusBar', 'QProgressBar', 'QSizePolicy', 'QToolButton', 'QStackedWidget', 'QGroupBox',
     'QGraphicsDropShadowEffect',
-    'QPrinter', 'QPrinterInfo', 'QPrintDialog', 'QPageSize', 'QPageLayout', 'QTextDocument'
+    'QPrinter', 'QPrinterInfo', 'QPrintDialog', 'QPageSize', 'QPageLayout', 'QTextDocument',
+    'QMovie'
 ]
