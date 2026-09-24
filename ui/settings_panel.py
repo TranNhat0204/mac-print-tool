@@ -11,6 +11,7 @@ from ui.qt_compat import (
 )
 from core.document_engine import PrintJobSettings
 from core.universal_printer import UniversalPrinterManager, PrinterInfo
+from ui.stickers import create_sticker_label
 
 
 class NoScrollWheelFilter(QtCore.QObject):
@@ -92,14 +93,13 @@ class SettingsPanel(QWidget):
         header_row.addLayout(header_text)
         header_row.addStretch()
 
-        from ui.stickers import create_sticker_label
         header_sticker = create_sticker_label("shiba_1.gif", 52, 56, self)
         header_row.addWidget(header_sticker, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         layout.addLayout(header_row)
         layout.addSpacing(6)
 
         # 1. PRINTER SELECTION CARD
-        layout.addWidget(self._create_section_label("MÁY IN (DESTINATION)"))
+        layout.addWidget(self._create_section_label("MÁY IN (DESTINATION)", "shiba_10.gif", (34, 30)))
         p_card = QFrame()
         p_card.setProperty("class", "settingCard")
         p_layout = QVBoxLayout(p_card)
@@ -133,7 +133,7 @@ class SettingsPanel(QWidget):
         layout.addWidget(p_card)
 
         # 2. COPIES CARD
-        layout.addWidget(self._create_section_label("BẢN SAO (COPIES)"))
+        layout.addWidget(self._create_section_label("BẢN SAO (COPIES)", "shiba_7.gif", (30, 32)))
         c_card = QFrame()
         c_card.setProperty("class", "settingCard")
         c_layout = QVBoxLayout(c_card)
@@ -154,7 +154,7 @@ class SettingsPanel(QWidget):
         layout.addWidget(c_card)
 
         # 3. PAGES RANGE CARD
-        layout.addWidget(self._create_section_label("TRANG IN (PAGES)"))
+        layout.addWidget(self._create_section_label("TRANG IN (PAGES)", "shiba_6.gif", (26, 35)))
         pg_card = QFrame()
         pg_card.setProperty("class", "settingCard")
         pg_layout = QVBoxLayout(pg_card)
@@ -195,7 +195,7 @@ class SettingsPanel(QWidget):
         layout.addWidget(pg_card)
 
         # 4. COLOR MODE CARD
-        layout.addWidget(self._create_section_label("CHẾ ĐỘ MÀU (COLOR)"))
+        layout.addWidget(self._create_section_label("CHẾ ĐỘ MÀU (COLOR)", "shiba_8.gif", (34, 30)))
         color_card = QFrame()
         color_card.setProperty("class", "settingCard")
         clr_layout = QVBoxLayout(color_card)
@@ -210,8 +210,8 @@ class SettingsPanel(QWidget):
 
         layout.addWidget(color_card)
 
-        # 5. ORIENTATION & PAPER SIZE CARD
-        layout.addWidget(self._create_section_label("BỐ CỤC & KHỔ GIẤY (LAYOUT & PAPER)"))
+        # 5. ORIENTATION, PAPER SIZE & SCALING CARD
+        layout.addWidget(self._create_section_label("BỐ CỤC & THU PHÓNG (LAYOUT & SCALING)", "shiba_9.gif", (34, 30)))
         layout_card = QFrame()
         layout_card.setProperty("class", "settingCard")
         l_layout = QVBoxLayout(layout_card)
@@ -242,15 +242,11 @@ class SettingsPanel(QWidget):
         self.duplex_combo.currentIndexChanged.connect(self._on_change)
         l_layout.addLayout(self._create_form_row("In 2 mặt:", self.duplex_combo))
 
-        layout.addWidget(layout_card)
-
-        # 6. SCALE & N-UP CARD
-        layout.addWidget(self._create_section_label("THU PHÓNG & BỐ CỤC N-UP"))
-        scale_card = QFrame()
-        scale_card.setProperty("class", "settingCard")
-        s_layout = QVBoxLayout(scale_card)
-        s_layout.setContentsMargins(12, 12, 12, 12)
-        s_layout.setSpacing(8)
+        # Separator line between paper geometry and scaling
+        sep = QFrame()
+        sep.setFrameShape(QFrame.Shape.HLine)
+        sep.setStyleSheet("color: #FFEDD5; margin: 4px 0px;")
+        l_layout.addWidget(sep)
 
         self.scale_combo = QComboBox()
         self.scale_combo.addItem("Vừa khổ giấy (Fit to Paper)", "fit")
@@ -258,7 +254,7 @@ class SettingsPanel(QWidget):
         self.scale_combo.addItem("Kích thước gốc 100% (Actual)", "actual")
         self.scale_combo.addItem("Tùy chỉnh tỉ lệ % (Custom)", "custom")
         self.scale_combo.currentIndexChanged.connect(self._on_scale_combo_changed)
-        s_layout.addLayout(self._create_form_row("Thu phóng:", self.scale_combo))
+        l_layout.addLayout(self._create_form_row("Thu phóng:", self.scale_combo))
 
         self.custom_scale_container = QWidget()
         custom_layout = QVBoxLayout(self.custom_scale_container)
@@ -271,7 +267,7 @@ class SettingsPanel(QWidget):
         self.scale_percent_spin.valueChanged.connect(self._on_change)
         custom_layout.addLayout(self._create_form_row("Tỉ lệ (%):", self.scale_percent_spin))
         self.custom_scale_container.setVisible(False)
-        s_layout.addWidget(self.custom_scale_container)
+        l_layout.addWidget(self.custom_scale_container)
 
         self.nup_combo = QComboBox()
         self.nup_combo.addItem("1 trang trên mỗi tờ", 1)
@@ -281,19 +277,19 @@ class SettingsPanel(QWidget):
         self.nup_combo.addItem("9 trang trên mỗi tờ (9-up)", 9)
         self.nup_combo.addItem("16 trang trên mỗi tờ (16-up)", 16)
         self.nup_combo.currentIndexChanged.connect(self._on_change)
-        s_layout.addLayout(self._create_form_row("Số trang / tờ:", self.nup_combo))
+        l_layout.addLayout(self._create_form_row("Số trang / tờ:", self.nup_combo))
 
         self.margin_combo = QComboBox()
         self.margin_combo.addItem("Mặc định (Khớp 100% khổ giấy)", "default")
         self.margin_combo.addItem("Không lề (None)", "none")
         self.margin_combo.addItem("Tối thiểu (Minimum - 3mm)", "minimum")
         self.margin_combo.currentIndexChanged.connect(self._on_change)
-        s_layout.addLayout(self._create_form_row("Lề trang:", self.margin_combo))
+        l_layout.addLayout(self._create_form_row("Lề trang:", self.margin_combo))
 
-        layout.addWidget(scale_card)
+        layout.addWidget(layout_card)
 
         # APPLY DROP SHADOWS FOR FLOATING CARDS & TACTILE BUTTONS
-        for card in [p_card, c_card, pg_card, color_card, layout_card, scale_card]:
+        for card in [p_card, c_card, pg_card, color_card, layout_card]:
             _add_drop_shadow(card, blur=10, y_offset=2, color_tuple=(190, 110, 50, 35))
 
         # INSTALL NO-WHEEL FILTER ON ALL CONTROLS & CONFIGURE AUTO-ELIDE
@@ -368,10 +364,23 @@ class SettingsPanel(QWidget):
         row.addWidget(widget, 1)
         return row
 
-    def _create_section_label(self, text: str) -> QLabel:
+    def _create_section_label(self, text: str, sticker_name: str = None, sticker_size: tuple = (32, 32)) -> QWidget:
+        if not sticker_name:
+            lbl = QLabel(text)
+            lbl.setObjectName("sectionTitle")
+            return lbl
+
+        container = QWidget()
+        row = QHBoxLayout(container)
+        row.setContentsMargins(0, 4, 4, 0)
+        row.setSpacing(6)
         lbl = QLabel(text)
         lbl.setObjectName("sectionTitle")
-        return lbl
+        row.addWidget(lbl)
+        row.addStretch()
+        stk = create_sticker_label(sticker_name, sticker_size[0], sticker_size[1], container)
+        row.addWidget(stk, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        return container
 
     def reload_printers(self):
         self._block_signals = True
