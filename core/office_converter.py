@@ -62,22 +62,24 @@ def convert_office_to_pdf(input_path: str) -> Tuple[bool, Optional[str], str]:
             _cleanup_temp_file(temp_pdf)
             return False, None, _build_fallback_guidance(input_path, msg)
 
-    # 3. macOS: Native textutil or AppleScript (Pages/Numbers/Keynote/Office)
+    # 3. macOS: AppleScript (Pages/Word/Numbers/Keynote) or textutil fallback
     elif sys.platform == "darwin":
-        # Strategy A: For Word documents (.docx, .doc), use native macOS /usr/bin/textutil + QTextDocument
-        # textutil is built into 100% of Macs, converts in 0.1s, and bypasses Apple Event -1743!
+        # Strategy A: AppleScript via Pages / Numbers / Keynote / MS Office
+        # Best fidelity — preserves complex tables, images, and layout perfectly.
+        success, msg = _convert_macos_applescript(abs_input, temp_pdf, ext)
+        if success and os.path.exists(temp_pdf) and os.path.getsize(temp_pdf) > 0:
+            return True, temp_pdf, "Chuyển đổi thành công qua Apple iWork / MS Office (macOS)"
+
+        # Strategy B: For Word documents (.docx, .doc), fall back to macOS textutil + QTextDocument
+        # textutil is built into 100% of Macs and bypasses Apple Event -1743 permission errors.
+        # Lower fidelity for complex layouts but always works without any permissions.
         if ext in OFFICE_WORD_EXTENSIONS:
             ok, t_msg = _convert_macos_textutil(abs_input, temp_pdf)
             if ok and os.path.exists(temp_pdf) and os.path.getsize(temp_pdf) > 0:
                 return True, temp_pdf, "Chuyển đổi thành công qua macOS textutil"
 
-        # Strategy B: AppleScript via Pages / Numbers / Keynote / MS Office
-        success, msg = _convert_macos_applescript(abs_input, temp_pdf, ext)
-        if success and os.path.exists(temp_pdf) and os.path.getsize(temp_pdf) > 0:
-            return True, temp_pdf, "Chuyển đổi thành công qua Apple iWork / MS Office (macOS)"
-        else:
-            _cleanup_temp_file(temp_pdf)
-            return False, None, _build_fallback_guidance(input_path, msg)
+        _cleanup_temp_file(temp_pdf)
+        return False, None, _build_fallback_guidance(input_path, msg)
 
     # 4. Other OS / Unsupported
     _cleanup_temp_file(temp_pdf)
@@ -354,6 +356,8 @@ def _convert_macos_textutil(input_path: str, output_pdf_path: str) -> Tuple[bool
     Converts Word (.docx, .doc) to PDF using macOS built-in /usr/bin/textutil
     combined with PyQt6 QTextDocument & QPrinter.
     Runs 100% locally on macOS without needing Pages, MS Word, or Apple Event permissions (-1743).
+    Note: This is a low-fidelity fallback — complex tables, images, and advanced layout
+    may not render perfectly. AppleScript/LibreOffice conversion is preferred when available.
     """
     textutil_bin = "/usr/bin/textutil"
     if not os.path.exists(textutil_bin):
@@ -371,7 +375,21 @@ def _convert_macos_textutil(input_path: str, output_pdf_path: str) -> Tuple[bool
         with open(temp_html, "r", encoding="utf-8", errors="replace") as f:
             html_text = f.read()
 
-        from ui.qt_compat import QTextDocument, QPrinter, QPageSize
+        # Inject CSS to improve table/image layout within the QTextDocument page width
+        css_inject = """<style>
+            body { font-size: 12pt; line-height: 1.4; }
+            table { width: 100% !important; border-collapse: collapse; table-layout: fixed; }
+            td, th { padding: 4px 6px; word-wrap: break-word; overflow-wrap: break-word; }
+            img { max-width: 100%; height: auto; }
+        </style>"""
+        if "<head>" in html_text:
+            html_text = html_text.replace("<head>", f"<head>{css_inject}")
+        elif "<html>" in html_text:
+            html_text = html_text.replace("<html>", f"<html><head>{css_inject}</head>")
+        else:
+            html_text = f"{css_inject}{html_text}"
+
+        from ui.qt_compat import QTextDocument, QPrinter, QPageSize, QMarginsF
         doc = QTextDocument()
         doc.setHtml(html_text)
 
@@ -380,6 +398,32 @@ def _convert_macos_textutil(input_path: str, output_pdf_path: str) -> Tuple[bool
         printer.setOutputFileName(output_pdf_path)
         if hasattr(QPageSize, "PageSizeId"):
             printer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
+
+        # Set proper page margins (20mm all sides for readability)
+        try:
+            from ui.qt_compat import QPageLayout
+            from ui.qt_compat import Qt
+            margins = QMarginsF(20.0, 20.0, 20.0, 20.0)
+            page_layout = QPageLayout(
+                QPageSize(QPageSize.PageSizeId.A4),
+                QPageLayout.Orientation.Portrait,
+                margins,
+                QPageLayout.Unit.Millimeter
+            )
+            printer.setPageLayout(page_layout)
+        except Exception:
+            pass
+
+        # Set the document page width to match printer's printable width
+        # This prevents content from being rendered at default tiny width
+        try:
+            printable_rect = printer.pageRect(QPrinter.Unit.Point)
+            doc.setPageSize(printable_rect.size())
+        except Exception:
+            # Fallback: A4 printable area in points (595 - 2*56.7 margins ≈ 481.6pt)
+            from ui.qt_compat import QSizeF
+            doc.setPageSize(QSizeF(481.6, 729.6))
+
         doc.print(printer)
 
         if os.path.exists(output_pdf_path) and os.path.getsize(output_pdf_path) > 0:

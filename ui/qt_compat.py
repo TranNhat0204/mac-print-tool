@@ -8,7 +8,7 @@ QT_API = None
 
 try:
     from PyQt6 import QtCore, QtGui, QtWidgets
-    from PyQt6.QtCore import Qt, QSize, QPoint, QRect, QRectF, pyqtSignal as Signal, pyqtSlot as Slot, QTimer
+    from PyQt6.QtCore import Qt, QSize, QSizeF, QPoint, QRect, QRectF, QMarginsF, pyqtSignal as Signal, pyqtSlot as Slot, QTimer
     from PyQt6.QtGui import (
         QPixmap, QImage, QPainter, QColor, QFont, QPen, QBrush, QIcon, QKeySequence, QAction,
         QPageSize, QPageLayout, QTextDocument, QMovie
@@ -25,7 +25,7 @@ try:
 except ImportError:
     try:
         from PySide6 import QtCore, QtGui, QtWidgets
-        from PySide6.QtCore import Qt, QSize, QPoint, QRect, QRectF, Signal, Slot, QTimer
+        from PySide6.QtCore import Qt, QSize, QSizeF, QPoint, QRect, QRectF, QMarginsF, Signal, Slot, QTimer
         from PySide6.QtGui import (
             QPixmap, QImage, QPainter, QColor, QFont, QPen, QBrush, QIcon, QKeySequence, QAction,
             QPageSize, QPageLayout, QTextDocument, QMovie
@@ -43,8 +43,8 @@ except ImportError:
         raise ImportError("Cần cài đặt PyQt6 hoặc PySide6. Hãy chạy: pip install PyQt6 pymupdf Pillow") from e
 
 __all__ = [
-    'QT_API', 'QtCore', 'QtGui', 'QtWidgets', 'Qt', 'QSize', 'QPoint', 'QRect', 'QRectF',
-    'Signal', 'Slot', 'QTimer', 'QPixmap', 'QImage', 'QPainter', 'QColor', 'QFont',
+    'QT_API', 'QtCore', 'QtGui', 'QtWidgets', 'Qt', 'QSize', 'QSizeF', 'QPoint', 'QRect', 'QRectF',
+    'QMarginsF', 'Signal', 'Slot', 'QTimer', 'QPixmap', 'QImage', 'QPainter', 'QColor', 'QFont',
     'QPen', 'QBrush', 'QIcon', 'QKeySequence', 'QAction', 'QApplication', 'QMainWindow',
     'QWidget', 'QVBoxLayout', 'QHBoxLayout', 'QGridLayout', 'QLabel', 'QPushButton',
     'QComboBox', 'QSpinBox', 'QRadioButton', 'QButtonGroup', 'QCheckBox', 'QLineEdit',
@@ -52,5 +52,5 @@ __all__ = [
     'QStatusBar', 'QProgressBar', 'QSizePolicy', 'QToolButton', 'QStackedWidget', 'QGroupBox',
     'QGraphicsDropShadowEffect',
     'QPrinter', 'QPrinterInfo', 'QPrintDialog', 'QPageSize', 'QPageLayout', 'QTextDocument',
-    'QMovie'
+    'QMovie', 'QMarginsF'
 ]
