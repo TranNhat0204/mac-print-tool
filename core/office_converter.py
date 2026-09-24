@@ -62,8 +62,16 @@ def convert_office_to_pdf(input_path: str) -> Tuple[bool, Optional[str], str]:
             _cleanup_temp_file(temp_pdf)
             return False, None, _build_fallback_guidance(input_path, msg)
 
-    # 3. macOS: AppleScript with Pages / Numbers / Keynote or MS Office for Mac
+    # 3. macOS: Native textutil or AppleScript (Pages/Numbers/Keynote/Office)
     elif sys.platform == "darwin":
+        # Strategy A: For Word documents (.docx, .doc), use native macOS /usr/bin/textutil + QTextDocument
+        # textutil is built into 100% of Macs, converts in 0.1s, and bypasses Apple Event -1743!
+        if ext in OFFICE_WORD_EXTENSIONS:
+            ok, t_msg = _convert_macos_textutil(abs_input, temp_pdf)
+            if ok and os.path.exists(temp_pdf) and os.path.getsize(temp_pdf) > 0:
+                return True, temp_pdf, "Chuyển đổi thành công qua macOS textutil"
+
+        # Strategy B: AppleScript via Pages / Numbers / Keynote / MS Office
         success, msg = _convert_macos_applescript(abs_input, temp_pdf, ext)
         if success and os.path.exists(temp_pdf) and os.path.getsize(temp_pdf) > 0:
             return True, temp_pdf, "Chuyển đổi thành công qua Apple iWork / MS Office (macOS)"
@@ -341,9 +349,70 @@ end run
     return False, last_error
 
 
+def _convert_macos_textutil(input_path: str, output_pdf_path: str) -> Tuple[bool, str]:
+    """
+    Converts Word (.docx, .doc) to PDF using macOS built-in /usr/bin/textutil
+    combined with PyQt6 QTextDocument & QPrinter.
+    Runs 100% locally on macOS without needing Pages, MS Word, or Apple Event permissions (-1743).
+    """
+    textutil_bin = "/usr/bin/textutil"
+    if not os.path.exists(textutil_bin):
+        return False, "Không tìm thấy textutil trên macOS"
+
+    fd, temp_html = tempfile.mkstemp(prefix="macprint_txtutil_", suffix=".html")
+    os.close(fd)
+
+    try:
+        cmd = [textutil_bin, "-convert", "html", "-output", temp_html, input_path]
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        if res.returncode != 0 or not os.path.exists(temp_html) or os.path.getsize(temp_html) == 0:
+            return False, f"Lỗi textutil: {res.stderr.strip()}"
+
+        with open(temp_html, "r", encoding="utf-8", errors="replace") as f:
+            html_text = f.read()
+
+        from ui.qt_compat import QTextDocument, QPrinter, QPageSize
+        doc = QTextDocument()
+        doc.setHtml(html_text)
+
+        printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+        printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
+        printer.setOutputFileName(output_pdf_path)
+        if hasattr(QPageSize, "PageSizeId"):
+            printer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
+        doc.print(printer)
+
+        if os.path.exists(output_pdf_path) and os.path.getsize(output_pdf_path) > 0:
+            return True, "Thành công qua textutil"
+        return False, "Không thể xuất PDF từ HTML"
+    except Exception as e:
+        return False, f"Lỗi chuyển đổi textutil: {str(e)}"
+    finally:
+        if os.path.exists(temp_html):
+            try:
+                os.remove(temp_html)
+            except Exception:
+                pass
+
+
 def _build_fallback_guidance(input_path: str, raw_err: str) -> str:
     """Builds a clear, polite, and actionable guidance message in Vietnamese."""
     fname = os.path.basename(input_path)
+
+    # Specific guidance for macOS Automation / Apple Event -1743 error
+    if "-1743" in raw_err or "Không được phép gửi" in raw_err or "Not authorized to send Apple events" in raw_err:
+        return (
+            f"macOS đang chặn quyền gửi lệnh tự động của MacPrint đến Pages/Office (Lỗi -1743).\n\n"
+            f"🔓 ĐỂ BẬT QUYỀN TỰ ĐỘNG CHUYỂN ĐỔI:\n"
+            f"1. Vào Cài đặt hệ thống (System Settings) trên Mac.\n"
+            f"2. Vào 'Quyền riêng tư & Bảo mật' (Privacy & Security) -> chọn 'Tự động hóa' (Automation).\n"
+            f"3. Dưới mục 'MacPrint' (hoặc 'Terminal'), gạt BẬT quyền cho 'Pages' / 'Numbers' / 'Keynote'.\n\n"
+            f"💡 HOẶC MẸO XỬ LÝ NHANH TRONG 3 GIÂY:\n"
+            f"1. Mở tệp '{fname}' trong Word, Pages, Excel hoặc PPT.\n"
+            f"2. Bấm Cmd+P -> Chọn 'Lưu dưới dạng PDF' (Save as PDF).\n"
+            f"3. Kéo tệp PDF vừa tạo vào MacPrint để in ấn với đầy đủ tùy chọn!"
+        )
+
     return (
         f"Không thể mở trực tiếp tài liệu Office '{fname}'.\n"
         f"Chi tiết: {raw_err}\n\n"

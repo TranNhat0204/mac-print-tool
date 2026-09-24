@@ -88,6 +88,7 @@ def update_plist(app_path: str):
     pl["CFBundleDisplayName"] = "MacPrint"
     pl["NSHighResolutionCapable"] = True
     pl["NSSupportsAutomaticGraphicsSwitching"] = True
+    pl["NSAppleEventsUsageDescription"] = "MacPrint cần quyền gửi sự kiện Apple Events đến Pages, Numbers, Keynote hoặc Microsoft Office để chuyển đổi tài liệu sang định dạng in ấn."
 
     with open(plist_path, "wb") as f:
         plistlib.dump(pl, f)
