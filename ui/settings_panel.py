@@ -294,7 +294,7 @@ class SettingsPanel(QWidget):
 
         # APPLY DROP SHADOWS FOR FLOATING CARDS & TACTILE BUTTONS
         for card in [p_card, c_card, pg_card, color_card, layout_card, scale_card]:
-            _add_drop_shadow(card, blur=10, y_offset=2, color_tuple=(219, 39, 119, 35))
+            _add_drop_shadow(card, blur=10, y_offset=2, color_tuple=(190, 110, 50, 35))
 
         # INSTALL NO-WHEEL FILTER ON ALL CONTROLS & CONFIGURE AUTO-ELIDE
         # Prevents wheel scroll from accidentally changing values
@@ -309,6 +309,15 @@ class SettingsPanel(QWidget):
             if isinstance(widget, QComboBox):
                 widget.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
                 widget.setMinimumContentsLength(8)
+
+        # CUTE FOOTER STICKER AT END OF SETTINGS PANEL
+        layout.addSpacing(6)
+        footer_sticker_box = QHBoxLayout()
+        footer_sticker_box.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.footer_sticker = create_sticker_label("shiba_5.gif", 95, 105, self)
+        footer_sticker_box.addWidget(self.footer_sticker)
+        layout.addLayout(footer_sticker_box)
+        layout.addSpacing(6)
 
         layout.addStretch()
         scroll.setWidget(content)
