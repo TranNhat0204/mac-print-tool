@@ -46,12 +46,12 @@ class DropZoneWidget(QWidget):
         f_layout.addWidget(icon_label)
 
         title = QLabel("Kéo và thả tệp vào đây để in")
-        title.setStyleSheet("font-size: 20px; font-weight: 700; color: #831843;")
+        title.setStyleSheet("font-size: 20px; font-weight: 700; color: #9A3412;")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         f_layout.addWidget(title)
 
         subtitle = QLabel("Hỗ trợ PDF, Word, Excel, PowerPoint, hình ảnh (PNG, JPG, WEBP, TIFF, BMP), văn bản (TXT, CSV, MD...)")
-        subtitle.setStyleSheet("font-size: 13px; color: #9D174D;")
+        subtitle.setStyleSheet("font-size: 13px; color: #C2410C;")
         subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         f_layout.addWidget(subtitle)
 
@@ -60,16 +60,16 @@ class DropZoneWidget(QWidget):
         self.choose_btn = QPushButton("📂  Chọn tệp từ máy...")
         self.choose_btn.setStyleSheet("""
             QPushButton {
-                background-color: #F472B6; color: #FFFFFF; font-weight: 600;
+                background-color: #FB923C; color: #FFFFFF; font-weight: 600;
                 padding: 10px 24px; border-radius: 8px; font-size: 14px;
-                border: 1px solid #F472B6;
+                border: 1px solid #FB923C;
             }
             QPushButton:hover {
-                background-color: #EC4899;
-                border-color: #EC4899;
+                background-color: #F97316;
+                border-color: #F97316;
             }
             QPushButton:pressed {
-                background-color: #DB2777;
+                background-color: #EA580C;
             }
         """)
         self.choose_btn.clicked.connect(self._browse_file)

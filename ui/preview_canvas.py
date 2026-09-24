@@ -36,10 +36,10 @@ class SheetDisplayWidget(QWidget):
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
 
         # Fill neutral boxy canvas background
-        painter.fillRect(self.rect(), QColor("#2D2430"))
+        painter.fillRect(self.rect(), QColor("#292524"))
 
         if self.pixmap is None or self.pixmap.isNull() or self.logical_w <= 0:
-            painter.setPen(QColor("#FBCFE8"))
+            painter.setPen(QColor("#FED7AA"))
             painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, "Không có nội dung xem trước")
             return
 

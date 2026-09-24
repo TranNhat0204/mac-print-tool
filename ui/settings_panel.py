@@ -31,7 +31,7 @@ class NoScrollWheelFilter(QtCore.QObject):
         return super().eventFilter(obj, event)
 
 
-def _add_drop_shadow(widget: QWidget, blur: int = 8, y_offset: int = 2, color_tuple=(180, 100, 140, 40)):
+def _add_drop_shadow(widget: QWidget, blur: int = 8, y_offset: int = 2, color_tuple=(190, 110, 50, 40)):
     """Applies a soft cross-platform drop shadow effect to a widget."""
     try:
         shadow = QGraphicsDropShadowEffect(widget)
@@ -117,7 +117,7 @@ class SettingsPanel(QWidget):
         p_layout.addLayout(p_row)
 
         self.printer_status_label = QLabel("Trạng thái: Sẵn sàng")
-        self.printer_status_label.setStyleSheet("color: #9D174D; font-size: 11.5px; margin-left: 118px;")
+        self.printer_status_label.setStyleSheet("color: #C2410C; font-size: 11.5px; margin-left: 118px;")
         p_layout.addWidget(self.printer_status_label)
         layout.addWidget(p_card)
 
